@@ -61,13 +61,13 @@ public class AuthController {
         return spotifyAPI.getAccessToken();
     }
 
-    @GetMapping(value = "user-top-artists")
-    public Artist[] getUserTopArtists() {
+    @PostMapping(value = "user-top-artists")
+    public Artist[] getUserTopArtists(@RequestBody TopSongOrArtistRequest request) {
 
         final GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyAPI.getUsersTopArtists()
-                .time_range("long_term")
-                .limit(10)
-                .offset(5)
+                .time_range(request.getTimeRange())
+                .limit(request.getLimit())
+                .offset(request.getOffset())
                 .build();
         try {
             final Paging<Artist> artistPaging = getUsersTopArtistsRequest.execute();
@@ -78,12 +78,12 @@ public class AuthController {
         return new Artist[0];
     }
 
-    @GetMapping(value = "user-top-tracks")
-    public Track[] getUserTopTracks() {
+    @PostMapping(value = "user-top-tracks")
+    public Track[] getUserTopTracks(@RequestBody TopSongOrArtistRequest request) {
         final GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyAPI.getUsersTopTracks()
-                .time_range("medium_term")
-                .limit(10)
-                .offset(5)
+                .time_range(request.getTimeRange())
+                .limit(request.getLimit())
+                .offset(request.getOffset())
                 .build();
         try {
             final Paging<Track> trackPaging = getUsersTopTracksRequest.execute();
