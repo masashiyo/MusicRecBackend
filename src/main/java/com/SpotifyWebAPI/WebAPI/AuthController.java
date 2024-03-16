@@ -12,14 +12,15 @@ import se.michaelthelin.spotify.requests.authorization.authorization_code.Author
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
 import se.michaelthelin.spotify.requests.data.personalization.simplified.GetUsersTopArtistsRequest;
 import se.michaelthelin.spotify.requests.data.personalization.simplified.GetUsersTopTracksRequest;
+import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
 
 import java.io.IOException;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/auth")
 public class AuthController {
-    private static final java.net.URI redirectUri = SpotifyHttpManager.makeUri("http://localhost:8080/api/get-user-code");
+    private static final java.net.URI redirectUri = SpotifyHttpManager.makeUri("http://localhost:8080/auth/get-user-code");
     private String code = "";
 
     private static final SpotifyApi spotifyAPI = new SpotifyApi.Builder()
@@ -88,6 +89,23 @@ public class AuthController {
         try {
             final Paging<Track> trackPaging = getUsersTopTracksRequest.execute();
             return trackPaging.getItems();
+        } catch (Exception e) {
+            System.out.println("Something went wrong!\n" + e.getMessage());
+        }
+        return new Track[0];
+    }
+
+    @PostMapping("songSearch")
+    @ResponseBody
+    public Track[] searchSpotify(@RequestBody SearchStringRequest query) {
+        String searchQuery = query.getQuery();
+        final SearchTracksRequest searchTracksRequest = spotifyAPI.searchTracks(searchQuery)
+                .limit(10)
+                .offset(0)
+//                .includeExternal("audio") will probably use this somewhere later
+                .build();
+        try{
+            final Paging<Track> trackPaging = searchTracksRequest.execute();
         } catch (Exception e) {
             System.out.println("Something went wrong!\n" + e.getMessage());
         }
