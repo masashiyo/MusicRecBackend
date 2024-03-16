@@ -106,6 +106,7 @@ public class AuthController {
                 .build();
         try{
             final Paging<Track> trackPaging = searchTracksRequest.execute();
+            return trackPaging.getItems();
         } catch (Exception e) {
             System.out.println("Something went wrong!\n" + e.getMessage());
         }
