@@ -51,8 +51,12 @@ public class AuthController {
         try {
             final AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodeRequest.execute();
 
-            spotifyAPI.setAccessToken((authorizationCodeCredentials).getAccessToken());
-            spotifyAPI.setRefreshToken((authorizationCodeCredentials).getRefreshToken());
+
+            String accessToken = authorizationCodeCredentials.getAccessToken();
+            String refreshToken = authorizationCodeCredentials.getRefreshToken();
+
+            spotifyAPI.setAccessToken(accessToken);
+            spotifyAPI.setRefreshToken(refreshToken);
 
             System.out.println("Expires in: " + authorizationCodeCredentials.getExpiresIn());
         } catch (IOException | SpotifyWebApiException | org.apache.hc.core5.http.ParseException e) {
@@ -102,7 +106,7 @@ public class AuthController {
         final SearchTracksRequest searchTracksRequest = spotifyAPI.searchTracks(searchQuery)
                 .limit(10)
                 .offset(0)
-//                .includeExternal("audio") will probably use this somewhere later
+                .includeExternal("audio")
                 .build();
         try{
             final Paging<Track> trackPaging = searchTracksRequest.execute();
