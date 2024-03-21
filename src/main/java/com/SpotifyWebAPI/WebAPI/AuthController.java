@@ -7,9 +7,11 @@ import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
 import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.Recommendations;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRequest;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
+import se.michaelthelin.spotify.requests.data.browse.GetRecommendationsRequest;
 import se.michaelthelin.spotify.requests.data.personalization.simplified.GetUsersTopArtistsRequest;
 import se.michaelthelin.spotify.requests.data.personalization.simplified.GetUsersTopTracksRequest;
 import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
@@ -111,6 +113,23 @@ public class AuthController {
         try{
             final Paging<Track> trackPaging = searchTracksRequest.execute();
             return trackPaging.getItems();
+        } catch (Exception e) {
+            System.out.println("Something went wrong!\n" + e.getMessage());
+        }
+        return new Track[0];
+    }
+
+    @PostMapping("songRecs")
+    @ResponseBody
+    public Track[] trackRecs(@RequestBody TrackRecommendationRequest request) {
+        final GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
+                .market(request.getMarket())
+                .limit(request.getLimit())
+                .seed_tracks(request.getTracks())
+                .build();
+        try {
+            final Recommendations trackRecommendations = getRecommendationsRequest.execute();
+            return trackRecommendations.getTracks();
         } catch (Exception e) {
             System.out.println("Something went wrong!\n" + e.getMessage());
         }
