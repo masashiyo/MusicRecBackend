@@ -4,7 +4,7 @@ import com.neovisionaries.i18n.CountryCode;
 
 public class TrackRecommendationRequest {
     private int limit;
-    private CountryCode market = CountryCode.SE;
+    private CountryCode market = CountryCode.US;
     private String tracks;
 
     public int getLimit() {
