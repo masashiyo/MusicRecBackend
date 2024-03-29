@@ -45,7 +45,14 @@ public class AuthController {
     }
 
     @GetMapping(value = "get-user-code")
-    public String getSpotifyUserCode(@RequestParam("code") String userCode, HttpServletResponse response) throws IOException {
+    public String getSpotifyUserCode(@RequestParam(value = "code", required = false) String userCode, @RequestParam(value = "error", required = false) String error, HttpServletResponse response) throws IOException {
+
+        if(error != null && error.equals("access_denied") || userCode == null) {
+            System.out.println("Error occurred while trying to sign in.");
+            response.sendRedirect("http://localhost:5173/");
+            return null;
+        }
+
         code = userCode;
         AuthorizationCodeRequest authorizationCodeRequest = spotifyAPI.authorizationCode(code)
                 .build();
@@ -67,6 +74,8 @@ public class AuthController {
         response.sendRedirect("http://localhost:5173/songRecommendation");
         return spotifyAPI.getAccessToken();
     }
+
+
 
     @PostMapping(value = "user-top-artists")
     public Artist[] getUserTopArtists(@RequestBody TopSongOrArtistRequest request) {
