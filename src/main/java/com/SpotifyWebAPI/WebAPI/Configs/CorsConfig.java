@@ -1,4 +1,4 @@
-package com.SpotifyWebAPI.WebAPI;
+package com.SpotifyWebAPI.WebAPI.Configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

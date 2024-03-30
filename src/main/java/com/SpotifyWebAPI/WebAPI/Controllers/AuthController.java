@@ -1,5 +1,12 @@
-package com.SpotifyWebAPI.WebAPI;
+package com.SpotifyWebAPI.WebAPI.Controllers;
+import com.SpotifyWebAPI.WebAPI.Configs.SpotifyConfig;
+import com.SpotifyWebAPI.WebAPI.Requests.SearchStringRequest;
+import com.SpotifyWebAPI.WebAPI.Requests.TopSongOrArtistRequest;
+import com.SpotifyWebAPI.WebAPI.Requests.TrackRecommendationRequest;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.SpotifyHttpManager;
@@ -22,20 +29,16 @@ import java.net.URI;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private static final java.net.URI redirectUri = SpotifyHttpManager.makeUri("http://localhost:8080/auth/get-user-code");
-    private String code = "";
+    public String authToken = "";
+    public String refreshToken = "";
 
-    private static final SpotifyApi spotifyAPI = new SpotifyApi.Builder()
-            //.setClientId(System.getenv("SPOTIFY_CLIENT_ID")) set SPOTIFY_CLIENT_ID=your-client-id
-            //.setClientSecret(System.getenv("SPOTIFY_CLIENT_SECRET")) set SPOTIFY_CLIENT_SECRET=your-client-secret
-            .setClientId("5f49d819d085489a833b8f0ad63886e5")
-            .setClientSecret("776f056f1efd4f45988f3bd9c8f42de1")
-            .setRedirectUri(redirectUri)
-            .build();
+    @Autowired
+    private SpotifyConfig spotifyConfig;
 
     @GetMapping("login")
     @ResponseBody
     public String spotifyLogin() {
+        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
         AuthorizationCodeUriRequest authorizationCodeUriRequest = spotifyAPI.authorizationCodeUri()
                 .scope("user-read-private, user-read-email, user-top-read")
                 .show_dialog(true)
@@ -53,8 +56,8 @@ public class AuthController {
             return null;
         }
 
-        code = userCode;
-        AuthorizationCodeRequest authorizationCodeRequest = spotifyAPI.authorizationCode(code)
+        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
+        AuthorizationCodeRequest authorizationCodeRequest = spotifyAPI.authorizationCode(userCode)
                 .build();
 
         try {
@@ -71,6 +74,23 @@ public class AuthController {
         } catch (IOException | SpotifyWebApiException | org.apache.hc.core5.http.ParseException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        authToken = spotifyAPI.getAccessToken();
+        refreshToken = spotifyAPI.getRefreshToken();
+        Cookie authCookie = new Cookie("authToken", authToken);
+//        authCookie.setSecure(true);
+//        authCookie.setHttpOnly(true);
+        authCookie.setMaxAge(60 * 60); //1 hr for now
+        authCookie.setPath("http://localhost:8080"); //sets to global. need to look more into this
+
+        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+//        refreshCookie.setSecure(true);
+//        refreshCookie.setHttpOnly(true);
+        refreshCookie.setMaxAge(60 * 60); // 1 hr for now
+        refreshCookie.setPath("http://localhost:8080"); //sets to global. need to look more into this
+
+        response.addCookie(authCookie);
+        response.addCookie(refreshCookie);
+
         response.sendRedirect("http://localhost:5173/songRecommendation");
         return spotifyAPI.getAccessToken();
     }
@@ -79,7 +99,9 @@ public class AuthController {
 
     @PostMapping(value = "user-top-artists")
     public Artist[] getUserTopArtists(@RequestBody TopSongOrArtistRequest request) {
-
+        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
+        spotifyAPI.setAccessToken(authToken);
+        spotifyAPI.setRefreshToken(refreshToken);
         final GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyAPI.getUsersTopArtists()
                 .time_range(request.getTimeRange())
                 .limit(request.getLimit())
@@ -96,6 +118,9 @@ public class AuthController {
 
     @PostMapping(value = "user-top-tracks")
     public Track[] getUserTopTracks(@RequestBody TopSongOrArtistRequest request) {
+        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
+        spotifyAPI.setAccessToken(authToken);
+        spotifyAPI.setRefreshToken(refreshToken);
         final GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyAPI.getUsersTopTracks()
                 .time_range(request.getTimeRange())
                 .limit(request.getLimit())
@@ -112,7 +137,18 @@ public class AuthController {
 
     @PostMapping("songSearch")
     @ResponseBody
-    public Track[] searchSpotify(@RequestBody SearchStringRequest query) {
+    public Track[] searchSpotify(@RequestBody SearchStringRequest query, HttpServletRequest request) {
+        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null) {
+            for (Cookie cookie : cookies) {
+                if(cookie.getName().equals("authToken")) {
+                     spotifyAPI.setAccessToken(cookie.getValue());
+                }
+            }
+            return null;
+        }
+        spotifyAPI.setRefreshToken(refreshToken);
         String searchQuery = query.getQuery();
         final SearchTracksRequest searchTracksRequest = spotifyAPI.searchTracks(searchQuery)
                 .limit(10)
@@ -131,6 +167,9 @@ public class AuthController {
     @PostMapping("songRecs")
     @ResponseBody
     public Track[] trackRecs(@RequestBody TrackRecommendationRequest request) {
+        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
+        spotifyAPI.setAccessToken(authToken);
+        spotifyAPI.setRefreshToken(refreshToken);
         final GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
                 .market(request.getMarket())
                 .limit(request.getLimit())

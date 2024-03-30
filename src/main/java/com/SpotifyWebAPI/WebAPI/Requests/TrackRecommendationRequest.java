@@ -1,4 +1,4 @@
-package com.SpotifyWebAPI.WebAPI;
+package com.SpotifyWebAPI.WebAPI.Requests;
 
 import com.neovisionaries.i18n.CountryCode;
 
