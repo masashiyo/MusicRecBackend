@@ -77,16 +77,16 @@ public class AuthController {
         authToken = spotifyAPI.getAccessToken();
         refreshToken = spotifyAPI.getRefreshToken();
         Cookie authCookie = new Cookie("authToken", authToken);
-//        authCookie.setSecure(true);
-//        authCookie.setHttpOnly(true);
+        authCookie.setSecure(true);
+        authCookie.setHttpOnly(true);
         authCookie.setMaxAge(60 * 60); //1 hr for now
-        authCookie.setPath("http://localhost:8080"); //sets to global. need to look more into this
+        authCookie.setPath("/"); //sets to global. need to look more into this
 
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-//        refreshCookie.setSecure(true);
-//        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true);
+        refreshCookie.setHttpOnly(true);
         refreshCookie.setMaxAge(60 * 60); // 1 hr for now
-        refreshCookie.setPath("http://localhost:8080"); //sets to global. need to look more into this
+        refreshCookie.setPath("/"); //sets to global. need to look more into this
 
         response.addCookie(authCookie);
         response.addCookie(refreshCookie);
@@ -146,7 +146,6 @@ public class AuthController {
                      spotifyAPI.setAccessToken(cookie.getValue());
                 }
             }
-            return null;
         }
         spotifyAPI.setRefreshToken(refreshToken);
         String searchQuery = query.getQuery();
