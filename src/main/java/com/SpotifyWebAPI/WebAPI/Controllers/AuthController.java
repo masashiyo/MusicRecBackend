@@ -1,27 +1,14 @@
 package com.SpotifyWebAPI.WebAPI.Controllers;
 import com.SpotifyWebAPI.WebAPI.Configs.SpotifyConfig;
-import com.SpotifyWebAPI.WebAPI.Requests.SearchStringRequest;
-import com.SpotifyWebAPI.WebAPI.Requests.TopSongOrArtistRequest;
-import com.SpotifyWebAPI.WebAPI.Requests.TrackRecommendationRequest;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import se.michaelthelin.spotify.SpotifyApi;
-import se.michaelthelin.spotify.SpotifyHttpManager;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
-import se.michaelthelin.spotify.model_objects.specification.Artist;
-import se.michaelthelin.spotify.model_objects.specification.Paging;
-import se.michaelthelin.spotify.model_objects.specification.Recommendations;
-import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRequest;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
-import se.michaelthelin.spotify.requests.data.browse.GetRecommendationsRequest;
-import se.michaelthelin.spotify.requests.data.personalization.simplified.GetUsersTopArtistsRequest;
-import se.michaelthelin.spotify.requests.data.personalization.simplified.GetUsersTopTracksRequest;
-import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
 
 import java.io.IOException;
 import java.net.URI;
@@ -93,94 +80,6 @@ public class AuthController {
 
         response.sendRedirect("http://localhost:5173/songRecommendation");
         return spotifyAPI.getAccessToken();
-    }
-
-
-
-    @PostMapping(value = "user-top-artists")
-    public Artist[] getUserTopArtists(@RequestBody TopSongOrArtistRequest request) {
-        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
-        spotifyAPI.setAccessToken(authToken);
-        spotifyAPI.setRefreshToken(refreshToken);
-        final GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyAPI.getUsersTopArtists()
-                .time_range(request.getTimeRange())
-                .limit(request.getLimit())
-                .offset(request.getOffset())
-                .build();
-        try {
-            final Paging<Artist> artistPaging = getUsersTopArtistsRequest.execute();
-            return artistPaging.getItems();
-        } catch (Exception e) {
-            System.out.println("Something went wrong!\n" + e.getMessage());
-        }
-        return new Artist[0];
-    }
-
-    @PostMapping(value = "user-top-tracks")
-    public Track[] getUserTopTracks(@RequestBody TopSongOrArtistRequest request) {
-        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
-        spotifyAPI.setAccessToken(authToken);
-        spotifyAPI.setRefreshToken(refreshToken);
-        final GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyAPI.getUsersTopTracks()
-                .time_range(request.getTimeRange())
-                .limit(request.getLimit())
-                .offset(request.getOffset())
-                .build();
-        try {
-            final Paging<Track> trackPaging = getUsersTopTracksRequest.execute();
-            return trackPaging.getItems();
-        } catch (Exception e) {
-            System.out.println("Something went wrong!\n" + e.getMessage());
-        }
-        return new Track[0];
-    }
-
-    @PostMapping("songSearch")
-    @ResponseBody
-    public Track[] searchSpotify(@RequestBody SearchStringRequest query, HttpServletRequest request) {
-        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
-        Cookie[] cookies = request.getCookies();
-        if(cookies != null) {
-            for (Cookie cookie : cookies) {
-                if(cookie.getName().equals("authToken")) {
-                     spotifyAPI.setAccessToken(cookie.getValue());
-                }
-            }
-        }
-        spotifyAPI.setRefreshToken(refreshToken);
-        String searchQuery = query.getQuery();
-        final SearchTracksRequest searchTracksRequest = spotifyAPI.searchTracks(searchQuery)
-                .limit(10)
-                .offset(0)
-                .includeExternal("audio")
-                .build();
-        try{
-            final Paging<Track> trackPaging = searchTracksRequest.execute();
-            return trackPaging.getItems();
-        } catch (Exception e) {
-            System.out.println("Something went wrong!\n" + e.getMessage());
-        }
-        return new Track[0];
-    }
-
-    @PostMapping("songRecs")
-    @ResponseBody
-    public Track[] trackRecs(@RequestBody TrackRecommendationRequest request) {
-        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
-        spotifyAPI.setAccessToken(authToken);
-        spotifyAPI.setRefreshToken(refreshToken);
-        final GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
-                .market(request.getMarket())
-                .limit(request.getLimit())
-                .seed_tracks(request.getTracks())
-                .build();
-        try {
-            final Recommendations trackRecommendations = getRecommendationsRequest.execute();
-            return trackRecommendations.getTracks();
-        } catch (Exception e) {
-            System.out.println("Something went wrong!\n" + e.getMessage());
-        }
-        return new Track[0];
     }
 }
 
