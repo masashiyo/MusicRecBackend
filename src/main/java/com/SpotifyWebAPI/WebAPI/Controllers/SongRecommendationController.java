@@ -28,15 +28,8 @@ public class SongRecommendationController {
     public Track[] searchSpotify(@RequestBody SearchStringRequest query, HttpServletRequest httpRequest) {
         Cookie[] cookies = httpRequest.getCookies();
         SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
-        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authCode"));
-        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshCode"));
-        if(cookies != null) {
-            for (Cookie cookie : cookies) {
-                if(cookie.getName().equals("authToken")) {
-                    spotifyAPI.setAccessToken(cookie.getValue());
-                }
-            }
-        }
+        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
+        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
         String searchQuery = query.getQuery();
         final SearchTracksRequest searchTracksRequest = spotifyAPI.searchTracks(searchQuery)
                 .limit(10)
@@ -57,8 +50,8 @@ public class SongRecommendationController {
     public Track[] trackRecs(@RequestBody TrackRecommendationRequest request, HttpServletRequest httpRequest) {
         Cookie[] cookies = httpRequest.getCookies();
         SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
-        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authCode"));
-        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshCode"));
+        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
+        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
         final GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
                 .market(request.getMarket())
                 .limit(request.getLimit())

@@ -23,12 +23,12 @@ public class TopArtistsTracksController {
     @Autowired
     private UserInformation userInformation;
 
-    @GetMapping(value = "user-top-artists")
+    @PostMapping(value = "user-top-artists")
     public Artist[] getUserTopArtists(@RequestBody TopSongOrArtistRequest request, HttpServletRequest httpRequest) {
         Cookie[] cookies = httpRequest.getCookies();
         SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
-        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authCode"));
-        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshCode"));
+        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
+        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
         final GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyAPI.getUsersTopArtists()
                 .time_range(request.getTimeRange())
                 .limit(request.getLimit())
@@ -47,8 +47,8 @@ public class TopArtistsTracksController {
     public Track[] getUserTopTracks(@RequestBody TopSongOrArtistRequest request, HttpServletRequest httpRequest) {
         Cookie[] cookies = httpRequest.getCookies();
         SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
-        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authCode"));
-        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshCode"));
+        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
+        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
         final GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyAPI.getUsersTopTracks()
                 .time_range(request.getTimeRange())
                 .limit(request.getLimit())
