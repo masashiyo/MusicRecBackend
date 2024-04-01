@@ -1,4 +1,4 @@
-package com.SpotifyWebAPI.WebAPI;
+package com.SpotifyWebAPI.WebAPI.Configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,8 +13,9 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("*"); // Update this with your frontend domain
+        config.addAllowedOriginPattern("*"); // Update this with your frontend domain
         config.addAllowedHeader("*");
+        config.setAllowCredentials(true);
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);

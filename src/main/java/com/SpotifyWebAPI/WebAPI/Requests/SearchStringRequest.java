@@ -1,4 +1,4 @@
-package com.SpotifyWebAPI.WebAPI;
+package com.SpotifyWebAPI.WebAPI.Requests;
 
 public class SearchStringRequest {
     private String query;
