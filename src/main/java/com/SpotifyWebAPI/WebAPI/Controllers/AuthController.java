@@ -81,7 +81,7 @@ public class AuthController {
         response.addCookie(authCookie);
         response.addCookie(refreshCookie);
 
-        response.sendRedirect("http://localhost:5173/songRecommendation");
+        response.sendRedirect("http://localhost:5173/home");
         return spotifyAPI.getAccessToken();
     }
 }
