@@ -1,7 +1,6 @@
 package com.SpotifyWebAPI.WebAPI.Controllers;
 
 import com.SpotifyWebAPI.WebAPI.Configs.SpotifyConfig;
-import com.SpotifyWebAPI.WebAPI.Requests.SearchStringRequest;
 import com.SpotifyWebAPI.WebAPI.Requests.TrackRecommendationRequest;
 import com.SpotifyWebAPI.WebAPI.UserDetails.UserInformation;
 import jakarta.servlet.http.Cookie;
@@ -23,20 +22,19 @@ public class SongRecommendationController {
 
     @Autowired
     private UserInformation userInformation;
-    @PostMapping("songSearch")
+    @GetMapping("songSearch")
     @ResponseBody
-    public Track[] searchSpotify(@RequestBody SearchStringRequest query, HttpServletRequest httpRequest) {
+    public Track[] searchSpotify(@RequestParam String query, HttpServletRequest httpRequest) {
         Cookie[] cookies = httpRequest.getCookies();
         SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
         spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
         spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
-        String searchQuery = query.getQuery();
-        final SearchTracksRequest searchTracksRequest = spotifyAPI.searchTracks(searchQuery)
+        final SearchTracksRequest searchTracksRequest = spotifyAPI.searchTracks(query)
                 .limit(10)
                 .offset(0)
                 .includeExternal("audio")
                 .build();
-        try{
+        try {
             final Paging<Track> trackPaging = searchTracksRequest.execute();
             return trackPaging.getItems();
         } catch (Exception e) {
