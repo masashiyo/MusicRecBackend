@@ -1,7 +1,6 @@
 package com.SpotifyWebAPI.WebAPI.Controllers;
 
 import com.SpotifyWebAPI.WebAPI.Configs.SpotifyConfig;
-import com.SpotifyWebAPI.WebAPI.Requests.TopSongOrArtistRequest;
 import com.SpotifyWebAPI.WebAPI.UserDetails.UserInformation;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,16 +22,21 @@ public class TopArtistsTracksController {
     @Autowired
     private UserInformation userInformation;
 
-    @PostMapping(value = "user-top-artists")
-    public Artist[] getUserTopArtists(@RequestBody TopSongOrArtistRequest request, HttpServletRequest httpRequest) {
+    @GetMapping(value = "user-top-artists")
+    public Artist[] getUserTopArtists(
+            @RequestParam String timeRange,
+            @RequestParam int limit,
+            @RequestParam int offset,
+            HttpServletRequest httpRequest)
+    {
         Cookie[] cookies = httpRequest.getCookies();
         SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
         spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
         spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
         final GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyAPI.getUsersTopArtists()
-                .time_range(request.getTimeRange())
-                .limit(request.getLimit())
-                .offset(request.getOffset())
+                .time_range(timeRange)
+                .limit(limit)
+                .offset(offset)
                 .build();
         try {
             final Paging<Artist> artistPaging = getUsersTopArtistsRequest.execute();
@@ -43,16 +47,21 @@ public class TopArtistsTracksController {
         return new Artist[0];
     }
 
-    @PostMapping(value = "user-top-tracks")
-    public Track[] getUserTopTracks(@RequestBody TopSongOrArtistRequest request, HttpServletRequest httpRequest) {
+    @GetMapping(value = "user-top-tracks")
+    public Track[] getUserTopTracks(
+            @RequestParam String timeRange,
+            @RequestParam int limit,
+            @RequestParam int offset,
+            HttpServletRequest httpRequest)
+    {
         Cookie[] cookies = httpRequest.getCookies();
         SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
         spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
         spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
         final GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyAPI.getUsersTopTracks()
-                .time_range(request.getTimeRange())
-                .limit(request.getLimit())
-                .offset(request.getOffset())
+                .time_range(timeRange)
+                .limit(limit)
+                .offset(offset)
                 .build();
         try {
             final Paging<Track> trackPaging = getUsersTopTracksRequest.execute();
