@@ -51,16 +51,16 @@ public class SongRecommendationController {
         return new Track[0];
     }
 
-    @PostMapping("songRecs")
+    @GetMapping("songCommonAudioFeatures")
     @ResponseBody
-    public ArrayList<AudioFeaturesObject> trackRecs(@RequestBody TrackRecommendationRequest request, HttpServletRequest httpRequest) {
+    public ArrayList<AudioFeaturesObject> trackCommonFeatures(@RequestParam String tracks, HttpServletRequest httpRequest) {
         Cookie[] cookies = httpRequest.getCookies();
         SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
         spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
         spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
 
         final GetAudioFeaturesForSeveralTracksRequest getAudioFeaturesForSeveralTracksRequest = spotifyAPI
-                .getAudioFeaturesForSeveralTracks(request.getTracks())
+                .getAudioFeaturesForSeveralTracks(tracks)
                 .build();
         try {
             final AudioFeatures[] audioFeatures = getAudioFeaturesForSeveralTracksRequest.execute();
@@ -71,24 +71,24 @@ public class SongRecommendationController {
         return new ArrayList<AudioFeaturesObject>();
     }
 
-//    @PostMapping("songRecs")
-//    @ResponseBody
-//    public HashMap<String, String> trackRecs(@RequestBody TrackRecommendationRequest request, HttpServletRequest httpRequest) {
-//        Cookie[] cookies = httpRequest.getCookies();
-//        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
-//        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
-//        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
-//        String[] songProperties = new String[]{};
-//        final GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
-//                .market(request.getMarket())
-//                .limit(request.getLimit())
-//                .seed_tracks(request.getTracks())
-//                .build();
-//        try {
-//            final AudioFeatures[] audioFeatures = getAudioFeaturesForSeveralTracksRequest.execute();
-//            return songFeatureService.getSimilarSongFeatures(audioFeatures);
-//        } catch (Exception e) {
-//            System.out.println("Something went wrong!\n" + e.getMessage());
-//        }
-//    }
+    @PostMapping("songRecs")
+    @ResponseBody
+    public Track[] trackRecs(@RequestBody TrackRecommendationRequest request, HttpServletRequest httpRequest) {
+        Cookie[] cookies = httpRequest.getCookies();
+        SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
+        spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
+        spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
+        final GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
+                .market(request.getMarket())
+                .limit(request.getLimit())
+                .seed_tracks(request.getTracks())
+                .build();
+        try {
+            final Recommendations trackRecommendations = getRecommendationsRequest.execute();
+            return trackRecommendations.getTracks();
+        } catch (Exception e) {
+            System.out.println("Something went wrong!\n" + e.getMessage());
+        }
+        return new Track[0];
+    }
 }
