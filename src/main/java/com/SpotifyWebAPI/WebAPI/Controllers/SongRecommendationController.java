@@ -4,9 +4,13 @@ import com.SpotifyWebAPI.WebAPI.Configs.AudioFeaturesObject;
 import com.SpotifyWebAPI.WebAPI.Configs.SpotifyConfig;
 import com.SpotifyWebAPI.WebAPI.Requests.TrackRecommendationRequest;
 import com.SpotifyWebAPI.WebAPI.UserDetails.UserInformation;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
@@ -18,15 +22,14 @@ import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequ
 import se.michaelthelin.spotify.requests.data.tracks.GetAudioFeaturesForSeveralTracksRequest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api")
 public class SongRecommendationController {
     @Autowired
     private SpotifyConfig spotifyConfig;
-
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private UserInformation userInformation;
     @Autowired SongFeatureService songFeatureService;
@@ -73,21 +76,28 @@ public class SongRecommendationController {
 
     @PostMapping("songRecs")
     @ResponseBody
-    public Track[] trackRecs(@RequestBody TrackRecommendationRequest request, HttpServletRequest httpRequest) {
+    public Track[] trackRecs(@RequestBody String request, HttpServletRequest httpRequest) {
+        TrackRecommendationRequest obj = null;
         Cookie[] cookies = httpRequest.getCookies();
         SpotifyApi spotifyAPI = spotifyConfig.getSpotifyObject();
         spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
         spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
-        final GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
-                .market(request.getMarket())
-                .limit(request.getLimit())
-                .seed_tracks(request.getTracks())
-                .build();
-        try {
+        try{
+            obj = objectMapper.readValue(request, TrackRecommendationRequest.class);
+            if(obj.getAudioFeatureList().length != 0) {
+                //DO SOME SORT OF ALGORITHM HERE WITH A SERVICE
+            }
+            final GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
+                    .market(obj.getMarket())
+                    .target_key()
+                    .limit(obj.getLimit())
+                    .seed_tracks(obj.getTracks())
+                    .build();
+
             final Recommendations trackRecommendations = getRecommendationsRequest.execute();
             return trackRecommendations.getTracks();
-        } catch (Exception e) {
-            System.out.println("Something went wrong!\n" + e.getMessage());
+        } catch(Exception e) {
+            System.out.println("Something went wrong\n" + e.getMessage());
         }
         return new Track[0];
     }

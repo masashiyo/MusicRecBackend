@@ -3,36 +3,35 @@ package com.SpotifyWebAPI.WebAPI.Controllers;
 import com.SpotifyWebAPI.WebAPI.Configs.AudioFeaturesObject;
 import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 @Service
 public class SongFeatureService {
 
     private void loadListWithCommonAudioFeaturesObject(Float[] values, String lowValue, String middleValue, String highValue, String category, ArrayList<AudioFeaturesObject> audioFeaturesList) {
-        int low = 0;
-        int middle = 0;
-        int high = 0;
-        float average = 0;
+        float average = 0f;
+        float range = 0f;
+        float max = 0f;
+        float min = 1f;
+        float total = 0;
         for(int i = 0; i < values.length; i++) {
-            average += values[i];
-            if(values[i] < 0.4) {
-                low++;
-            } else if (values[i] <= 0.6) {
-                middle++;
+            total += values[i];
+            if(values[i] > max)
+                max = values[i];
+            if(values[i] < min)
+                min = values[i];
+        }
+        average = total/values.length;
+        range = max-min;
+        if(range <=.15) {
+            if(average < 0.4) {
+                audioFeaturesList.add(new AudioFeaturesObject(average, category, lowValue));
+            } else if (average <= 0.6) {
+                audioFeaturesList.add(new AudioFeaturesObject(average, category, middleValue));
             } else {
-                high++;
+                audioFeaturesList.add(new AudioFeaturesObject(average, category, highValue));
             }
         }
-        average = average/values.length;
-        if(low == values.length)
-            audioFeaturesList.add(new AudioFeaturesObject(average, category, lowValue));
-        else if(middle == values.length)
-            audioFeaturesList.add(new AudioFeaturesObject(average, category, middleValue));
-        else if (high == values.length)
-            audioFeaturesList.add(new AudioFeaturesObject(average, category, highValue));
     }
 
 
@@ -52,7 +51,7 @@ public class SongFeatureService {
             vocal[i] = audioFeatures[i].getInstrumentalness();
         }
         loadListWithCommonAudioFeaturesObject(acousticness, "High Electronic Mix", "Electronic and Acoustic Mix", "High Acoustic Mix", "acousticness", audioFeatureList);
-        loadListWithCommonAudioFeaturesObject(danceability, "Low Danceability", "Neutal Danceability", "High Dancebility", "danceability", audioFeatureList);
+        loadListWithCommonAudioFeaturesObject(danceability, "Low Danceability", "Medium Danceability", "High Dancebility", "danceability", audioFeatureList);
         loadListWithCommonAudioFeaturesObject(valence, "Sad", "Happy and Sad Mix", "Happy", "valence", audioFeatureList);
         loadListWithCommonAudioFeaturesObject(energy, "Low Energy", "Neutral Energy", "High Energy", "energy", audioFeatureList);
         loadListWithCommonAudioFeaturesObject(vocal, "High Vocal Mix", "Vocal and Instrumental Mix", "High Instrumental Mix", "instrumentalness", audioFeatureList);

@@ -1,8 +1,13 @@
 package com.SpotifyWebAPI.WebAPI.Configs;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class AudioFeaturesObject {
+    @JsonProperty("average")
     private float average;
+    @JsonProperty("category")
     private String category;
+    @JsonProperty("categoryDisplayName")
     private String categoryDisplayName;
 
     public AudioFeaturesObject(float average, String category, String categoryDisplayName) {
