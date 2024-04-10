@@ -1,13 +1,17 @@
 package com.SpotifyWebAPI.WebAPI.Controllers;
 
 import com.SpotifyWebAPI.WebAPI.Configs.AudioFeaturesObject;
+import com.SpotifyWebAPI.WebAPI.Requests.TrackRecommendationRequest;
 import org.springframework.stereotype.Service;
+import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
+import se.michaelthelin.spotify.requests.data.browse.GetRecommendationsRequest;
+
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 @Service
 public class SongFeatureService {
-
     private void loadListWithCommonAudioFeaturesObject(Float[] values, String lowValue, String middleValue, String highValue, String category, ArrayList<AudioFeaturesObject> audioFeaturesList) {
         float average = 0f;
         float range = 0f;
@@ -33,8 +37,6 @@ public class SongFeatureService {
             }
         }
     }
-
-
     public ArrayList<AudioFeaturesObject> getSimilarSongFeatures(AudioFeatures[] audioFeatures) {
         ArrayList<AudioFeaturesObject> audioFeatureList = new ArrayList<AudioFeaturesObject>();
         Float[] acousticness = new Float[audioFeatures.length];
@@ -56,5 +58,32 @@ public class SongFeatureService {
         loadListWithCommonAudioFeaturesObject(energy, "Low Energy", "Neutral Energy", "High Energy", "energy", audioFeatureList);
         loadListWithCommonAudioFeaturesObject(vocal, "High Vocal Mix", "Vocal and Instrumental Mix", "High Instrumental Mix", "instrumentalness", audioFeatureList);
         return audioFeatureList;
+    }
+    private static void setTargetProperty(GetRecommendationsRequest request, String propertyName, float value) {
+        try {
+            String methodName = "target_" + propertyName;
+            Method method = GetRecommendationsRequest.class.getMethod(methodName, float.class);
+            method.invoke(request, value);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    public static GetRecommendationsRequest getRecommendationsRequest(TrackRecommendationRequest request, SpotifyApi spotifyAPI) {
+            GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
+                    .target_valence(0f)
+                    .target_acousticness(0f)
+                    .target_danceability(-1f)
+                    .target_energy(-1f)
+                    .target_instrumentalness(-1f)
+                    .seed_tracks(request.getTracks())
+                    .limit(request.getLimit())
+                    .market(request.getMarket())
+                    .build();
+
+            for(int i=0; i<request.getAudioFeatureList().length; i++) {
+                    setTargetProperty(getRecommendationsRequest, request.getAudioFeatureList()[i].getCategory(), request.getAudioFeatureList()[i].getAverage());
+                }
+            return getRecommendationsRequest;
     }
 }
