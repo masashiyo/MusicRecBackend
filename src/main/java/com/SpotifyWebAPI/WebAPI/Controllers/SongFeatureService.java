@@ -59,31 +59,27 @@ public class SongFeatureService {
         loadListWithCommonAudioFeaturesObject(vocal, "High Vocal Mix", "Vocal and Instrumental Mix", "High Instrumental Mix", "instrumentalness", audioFeatureList);
         return audioFeatureList;
     }
-    private static void setTargetProperty(GetRecommendationsRequest request, String propertyName, float value) {
+    private static void setTargetProperty(GetRecommendationsRequest.Builder builder, String propertyName, float value) {
         try {
             String methodName = "target_" + propertyName;
-            Method method = GetRecommendationsRequest.class.getMethod(methodName, float.class);
-            method.invoke(request, value);
+            Method method = GetRecommendationsRequest.Builder.class.getMethod(methodName, Float.class);
+            method.invoke(builder, value);
+            builder.target_acousticness(1f);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
     }
     public static GetRecommendationsRequest getRecommendationsRequest(TrackRecommendationRequest request, SpotifyApi spotifyAPI) {
-            GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
-                    .target_valence(0f)
-                    .target_acousticness(0f)
-                    .target_danceability(-1f)
-                    .target_energy(-1f)
-                    .target_instrumentalness(-1f)
+            GetRecommendationsRequest.Builder builder = spotifyAPI.getRecommendations()
                     .seed_tracks(request.getTracks())
                     .limit(request.getLimit())
-                    .market(request.getMarket())
-                    .build();
+                    .market(request.getMarket());
 
             for(int i=0; i<request.getAudioFeatureList().length; i++) {
-                    setTargetProperty(getRecommendationsRequest, request.getAudioFeatureList()[i].getCategory(), request.getAudioFeatureList()[i].getAverage());
+                    setTargetProperty(builder, request.getAudioFeatureList()[i].getCategory(), request.getAudioFeatureList()[i].getAverage());
                 }
-            return getRecommendationsRequest;
+            return builder.build();
     }
+
 }
