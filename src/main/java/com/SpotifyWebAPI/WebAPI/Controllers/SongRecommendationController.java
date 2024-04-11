@@ -41,7 +41,7 @@ public class SongRecommendationController {
         spotifyAPI.setAccessToken(userInformation.getUserCode(cookies, "authToken"));
         spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
         final SearchTracksRequest searchTracksRequest = spotifyAPI.searchTracks(query)
-                .limit(10)
+                .limit(15)
                 .offset(0)
                 .includeExternal("audio")
                 .build();
