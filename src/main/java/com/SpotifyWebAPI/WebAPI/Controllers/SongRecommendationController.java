@@ -84,7 +84,6 @@ public class SongRecommendationController {
         spotifyAPI.setRefreshToken(userInformation.getUserCode(cookies, "refreshToken"));
         try{
             obj = objectMapper.readValue(request, TrackRecommendationRequest.class);
-//            GetRecommendationsRequest getrecs =spotifyAPI.getRecommendations().target_acousticness().build();
             final GetRecommendationsRequest getRecommendationsRequest = SongFeatureService.getRecommendationsRequest(obj, spotifyAPI);
             final Recommendations trackRecommendations = getRecommendationsRequest.execute();
             return trackRecommendations.getTracks();
