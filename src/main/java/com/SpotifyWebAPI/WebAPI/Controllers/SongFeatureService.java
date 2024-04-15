@@ -27,7 +27,7 @@ public class SongFeatureService {
         }
         average = total/values.length;
         range = max-min;
-        if(range <=.15) {
+        if(range <=.1) {
             if(average < 0.4) {
                 audioFeaturesList.add(new AudioFeaturesObject(average, category, lowValue));
             } else if (average <= 0.6) {
