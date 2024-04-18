@@ -1,6 +1,8 @@
 package com.SpotifyWebAPI.WebAPI.Controllers;
 import com.SpotifyWebAPI.WebAPI.Configs.SpotifyConfig;
+import com.SpotifyWebAPI.WebAPI.UserDetails.UserInformation;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +11,7 @@ import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRequest;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
+import se.michaelthelin.spotify.requests.authorization.authorization_code.pkce.AuthorizationCodePKCERefreshRequest;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,6 +24,8 @@ public class AuthController {
 
     @Autowired
     private SpotifyConfig spotifyConfig;
+    @Autowired
+    private UserInformation userInformation;
 
     @GetMapping("login")
     @ResponseBody
