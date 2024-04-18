@@ -20,6 +20,6 @@ public class AuthService {
         } catch (Exception error) {
             System.out.println("Error with refreshing tokens: " + error.getMessage());
         }
-        return null;
+        return new String[0];
     }
 }
