@@ -9,25 +9,16 @@ import se.michaelthelin.spotify.requests.authorization.authorization_code.pkce.A
 import java.io.IOException;
 
 public class AuthService {
-    public String getRefreshedSpotifyAuthToken(SpotifyApi spotifyAPI) throws IOException {
-        SpotifyApi tempSpotifyAPI = spotifyAPI;
-        final AuthorizationCodePKCERefreshRequest refreshRequest = tempSpotifyAPI.authorizationCodePKCERefresh().build();
+    public String[] getRefreshedTokens(SpotifyApi spotifyAPI) {
+        final AuthorizationCodePKCERefreshRequest refreshRequest = spotifyAPI.authorizationCodePKCERefresh().build();
         try {
             final AuthorizationCodeCredentials authorizationCodeCredentials = refreshRequest.execute();
-            return authorizationCodeCredentials.getRefreshToken();
+            String[] tokens = new String[2];
+            tokens[0] = authorizationCodeCredentials.getAccessToken();
+            tokens[1] = authorizationCodeCredentials.getRefreshToken();
+            return tokens;
         } catch (Exception error) {
-            System.out.println("Error with refreshing your auth token: " + error.getMessage());
-        }
-        return null;
-    }
-    public String getRefreshedSpotifyRefreshToken(SpotifyApi spotifyAPI) throws IOException {
-        SpotifyApi tempSpotifyAPI = spotifyAPI;
-        final AuthorizationCodePKCERefreshRequest refreshRequest = tempSpotifyAPI.authorizationCodePKCERefresh().build();
-        try {
-            final AuthorizationCodeCredentials authorizationCodeCredentials = refreshRequest.execute();
-            return authorizationCodeCredentials.getRefreshToken();
-        } catch (Exception error) {
-            System.out.println("Error with refreshing your refresh token: " + error.getMessage());
+            System.out.println("Error with refreshing tokens: " + error.getMessage());
         }
         return null;
     }
