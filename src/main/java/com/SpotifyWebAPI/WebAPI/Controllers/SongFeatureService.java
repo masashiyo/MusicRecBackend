@@ -64,7 +64,6 @@ public class SongFeatureService {
             String methodName = "target_" + propertyName;
             Method method = GetRecommendationsRequest.Builder.class.getMethod(methodName, Float.class);
             method.invoke(builder, value);
-            builder.target_acousticness(1f);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
